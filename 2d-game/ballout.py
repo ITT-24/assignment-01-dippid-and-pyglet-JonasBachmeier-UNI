@@ -26,9 +26,7 @@ class Player:
         self.sprite.draw()
         # Check if jump has ended by checking the time
         if self.invincible and time.time() - self.jump_start_time > 2:
-            self.invincible = False
-            self.sprite.scale /= 1.4
-            self.jump_cooldown = time.time()
+            self.jump_end()
 
     # The Image loading was created using Github Copilot
     def __init__(self,x,y, img):
@@ -49,6 +47,7 @@ class Player:
             self.sprite.x = 2
 
     def jump_start(self):
+        # Checks if cooldown is done or if player is jumping already
         if self.invincible or time.time() - self.jump_cooldown < 3:
             return
         self.invincible = True
@@ -57,8 +56,14 @@ class Player:
     
     def jump_end(self):
         self.invincible = False
+        self.sprite.scale /= 1.4
+        self.jump_cooldown = time.time()
     
     def check_collision(self,holes):
+        # calculate distance between player and hole for each hole
+        # if distance is smaller than the combined radius of player and hole, the player dies
+        # to make it a bit easier, not the whole radius of the hole is used. This gives the player
+        # a bit more room to dodge the holes
         for hole in holes.holes:
             distance = sqrt((self.sprite.x - hole.sprite.x)**2 + (self.sprite.y - hole.sprite.y)**2)
             if distance < self.sprite.width/2 + hole.sprite.width/4 and not self.invincible:
@@ -83,6 +88,7 @@ class Hole:
     def draw(self):
         self.sprite.draw()
 
+    # The Image loading was created using Github Copilot
     def __init__(self,x,y,speed):
         self.img = pg.image.load("hole.png")
         self.speed = speed
@@ -93,6 +99,7 @@ class Hole:
 
     def move(self):
         self.sprite.y -= self.speed
+        # If hole is out of bounds, it gets removed
         if self.sprite.y < -self.sprite.height:
             Hole.holes.remove(self)
 
